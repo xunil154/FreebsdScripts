@@ -272,7 +272,7 @@ mkdir -p /boot/zfs/zroot/root/
 mv zfs_chroot.sh /boot/zfs/zroot/root/
 
 # Now it's time to chroot into the new system!
-chroot /boot/zfs/zroot /bin/sh /root/zfs_chroot.sh
+chroot /boot/zfs/zroot /bin/sh /root/zfs_chroot.sh $HDD
 
 #Now, we need to make sure the bootloader can read our ZFS pool cache (or it
 #wont mount our ZFS disks on boot):

@@ -79,6 +79,7 @@ make aliases
 #done, we need to exit the chroot:
 
 echo "Dropping into shell so you can run last minute configurations"
+echo "Type 'exit' when you're done to continue the instillation process"
 echo "***********************************"
 /bin/csh
 
