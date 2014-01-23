@@ -28,9 +28,10 @@ if [ $# -ne 1 ]
 fi
 
 die(){
-    echo $1
+    echo "**** $1"
     exit 1
 }
+
 
 # The Hard Drive to install to
 #HDD=ada0
@@ -41,18 +42,30 @@ HDDP2="$HDD"p2
 HDDP3="$HDD"p3
 HDDP3ELI="$HDD"p3.eli
 
-BOOTDIR=/tmp/bootdir
+echo "**********************************************************"
+echo "WARNING: Running this script will destroy ALL data on $HDD"
+echo "**********************************************************"
+read -p "Do you wish to continue? (Y/N): " yn
+case $yn in
+    [Yy]* ) echo "Alrighty then, here we go";;
+    [Nn]* ) exit 1;;
+    * ) echo "Invalid option, assuming NO"; exit 1;;
+esac
+sleep 5
 
 echo "Destrotying old disk"
+echo "----------------------------------------------------"
 gpart destroy -F $HDD
 
 echo "Creating new gpt partition scheme"
+echo "----------------------------------------------------"
 if ! gpart create -s gpt $HDD
     then
     die "Could not create gpt partition"
 fi
 
 echo "Adding base partitions"
+echo "----------------------------------------------------"
 if ! gpart add -s 128 -t freebsd-boot $HDD
     then
     die "could not create boot fs"
@@ -69,6 +82,7 @@ if ! gpart add -t freebsd-zfs $HDD
 fi
 
 echo "Installing the bootloader"
+echo "----------------------------------------------------"
 # write the bootloader
 if ! gpart bootcode -b /boot/pmbr -p /boot/gptzfsboot -i 1 $HDD
     then
@@ -76,12 +90,14 @@ if ! gpart bootcode -b /boot/pmbr -p /boot/gptzfsboot -i 1 $HDD
 fi
 
 echo "Setting up temporary ram disk"
+echo "----------------------------------------------------"
 # Setup temp ramdisk
 mdconfig -a -t malloc -s 128m -u 2
 newfs -O2 /dev/md2
 mount /dev/md2 /boot/zfs
 
 echo "Loading kernel modules"
+echo "----------------------------------------------------"
 # Setup temp ramdisk
 # load the kernel modules
 if ! kldload opensolaris
@@ -98,6 +114,7 @@ if ! kldload geom_eli
 fi
 
 echo "Creating bootdir zpool on /dev/$HDDP2"
+echo "----------------------------------------------------"
 # Setup temp ramdisk
 # Create initial boot dir
 if ! mkdir -p /boot/zfs/bootdir
@@ -122,16 +139,21 @@ if ! zfs mount bootdir
 fi
 
 echo "Generating encryption key"
+echo "----------------------------------------------------"
 # generate encryption key
 dd if=/dev/random of=/boot/zfs/bootdir/encryption.key bs=4096 count=1
 
 echo "Encrypting the partition"
+echo "----------------------------------------------------"
+echo 
+echo "Enter the disk encryption password: "
 # encrypt geli partition 
 if ! geli init -b -B /boot/zfs/bootdir/$HDDP3ELI -e AES-XTS -K /boot/zfs/bootdir/encryption.key -l 256 -s 4096 /dev/$HDDP3
     then
     die "Failed to encrypt $HDDP3"
 fi
 echo "Attaching the encrypted partition"
+echo "----------------------------------------------------"
 if ! geli attach -k /boot/zfs/bootdir/encryption.key /dev/$HDDP3
     then
     die "Could not attach encrypted partition $HDDP3"
@@ -140,6 +162,7 @@ fi
 sleep 4
 
 echo "Creating zroot pool and remounting bootdir inside zroot"
+echo "----------------------------------------------------"
 # Create the zroot pool, and remount the boot dir to inside zroot
 
 # expect this to error, /zroot does not exist so it cannot be mounted
@@ -159,6 +182,7 @@ if ! zfs mount bootdir
 fi
 
 echo "Creating optimized zfs filesystem"
+echo "----------------------------------------------------"
 # Create the sub pools optimized for each data type
 zfs set checksum=fletcher4 zroot
 zfs create -o compression=on -o exec=on -o setuid=off zroot/tmp
@@ -198,6 +222,7 @@ ftp_src=$ftp"/src.txz"
 
 echo "Detected arch: $arch"
 echo "Installing freebsd: Will download the latest images from $ftp"
+echo "----------------------------------------------------"
 mkdir -p /boot/zfs/zroot/downloads
 cd /boot/zfs/zroot/downloads
 if ! fetch $ftp_kernel
@@ -216,11 +241,23 @@ fi
 # Phew, that was a figersore, Now install freebsd
 cd /boot/zfs/zroot
 echo "Installing base"
-unxz -c /boot/zfs/zroot/downloads/base.txz | tar xpf -
+echo "----------------------------------------------------"
+if ! unxz -c /boot/zfs/zroot/downloads/base.txz | tar xpf -
+    then
+    die "Failed to install base"
+fi
 echo "Installing kernel"
-unxz -c /boot/zfs/zroot/downloads/kernel.txz | tar xpf -
+echo "----------------------------------------------------"
+if ! unxz -c /boot/zfs/zroot/downloads/kernel.txz | tar xpf -
+    then
+    die "Failed to install base"
+fi
 echo "Installing src"
-unxz -c /boot/zfs/zroot/downloads/src.txz | tar xpf -
+echo "----------------------------------------------------"
+if ! unxz -c /boot/zfs/zroot/downloads/src.txz | tar xpf -
+    then
+    echo "Failed to install src, but continuing anyway"
+fi
 
 # now set /var/empty to read only
 zfs set readonly=on zroot/var/empty
@@ -241,6 +278,7 @@ cp /boot/zfs/zpool.cache /boot/zfs/zroot/boot/zfs/zpool.cache
 #Finally, we need to unmount all the ZFS filesystems and configure their final
 #mountpoints…
 echo "Unmounting and updating zfs mount points"
+echo "----------------------------------------------------"
 
 zfs unmount -a
 zfs set mountpoint=legacy zroot
