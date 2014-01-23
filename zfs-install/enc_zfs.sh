@@ -127,7 +127,7 @@ dd if=/dev/random of=/boot/zfs/bootdir/encryption.key bs=4096 count=1
 
 echo "Encrypting the partition"
 # encrypt geli partition 
-if ! init -b -B /boot/zfs/bootdir/$HDDP3ELI -e AES-XTS -K /boot/zfs/bootdir/encryption.key -l 256 -s 4096 /dev/$HDDP3
+if ! geli init -b -B /boot/zfs/bootdir/$HDDP3ELI -e AES-XTS -K /boot/zfs/bootdir/encryption.key -l 256 -s 4096 /dev/$HDDP3
     then
     die "Failed to encrypt $HDDP3"
 fi
