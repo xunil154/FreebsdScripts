@@ -154,10 +154,11 @@ if ! geli init -b -B /boot/zfs/bootdir/$HDDP3ELI -e AES-XTS -K /boot/zfs/bootdir
 fi
 echo "Attaching the encrypted partition"
 echo "----------------------------------------------------"
-if ! geli attach -k /boot/zfs/bootdir/encryption.key /dev/$HDDP3
-    then
-    die "Could not attach encrypted partition $HDDP3"
-fi
+while ! geli attach -k /boot/zfs/bootdir/encryption.key /dev/$HDDP3
+    do 
+    echo "Could not attach encrypted partition $HDDP3"
+    echo "Try again...."
+done
 
 sleep 4
 
