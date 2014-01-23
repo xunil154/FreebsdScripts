@@ -145,7 +145,7 @@ unxz -c /boot/zfs/zroot/downloads/src.txz | tar xpf -
 zfs set readonly=on zroot/var/empty
 
 cd /tmp
-fetch https://raw.github.com/xunil154/FreebsdScripts/master/zfs-install/zfs_chroot.sh
+fetch --no-verify-peer https://raw.github.com/xunil154/FreebsdScripts/master/zfs-install/zfs_chroot.sh
 mv zfs_chroot.sh /boot/zfs/zroot/root/
 
 # Now it's time to chroot into the new system!
