@@ -41,6 +41,8 @@ HDDP2="$HDD"p2
 HDDP3="$HDD"p3
 HDDP3ELI="$HDD"p3.eli
 
+BOOTDIR=/tmp/bootdir
+
 echo "Destrotying old disk"
 gpart destroy -F $HDD
 
@@ -98,25 +100,13 @@ fi
 echo "Creating bootdir zpool on /dev/$HDDP2"
 # Setup temp ramdisk
 # Create initial boot dir
-if ! zpool create bootdir /dev/$HDDP2
-    then
-    die "Could not create boot dir from /dev/$HDDP2"
-fi
-if ! zpool set bootfs=bootdir bootdir
-    then
-    die "Could not set bootfs param on bootdir"
-fi
 if ! mkdir -p /boot/zfs/bootdir
     then
     die "Could not create /boot/zfs/bootdir "
 fi
-if ! zfs set mountpoint=/boot/zfs/bootdir bootdir
+if ! zpool create -o bootfs=bootdir -o mountpoint=/boot/zfs/bootdir bootdir /dev/$HDDP2 
     then
-    die "Could not set mountpoint for bootdir"
-fi
-if ! zfs mount bootdir
-    then
-    die "Could not create mount bootdir pool"
+    die "Could not create boot dir from /dev/$HDDP2"
 fi
 
 echo "Generating encryption key"
