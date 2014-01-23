@@ -37,6 +37,9 @@ echo "***********************************"
 echo 'zfs_enable="YES"' >> /etc/rc.conf
 touch /etc/fstab
 
+read -p "Enter the hostname for this machine: " host 
+echo "hostname=\"$host\"" >> /etc/rc.conf
+
 # And an initial /boot/loader.conf that will load ZFS, encryption and settings
 # for encrypted disks on boot:
 
@@ -65,6 +68,7 @@ passwd root
 echo "Configure time zone: "
 echo "***********************************"
 tzsetup
+
 
 #And setup a dummy /etc/mail/aliases file to prevent sendmail warnings:
 
