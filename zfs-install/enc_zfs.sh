@@ -1,3 +1,6 @@
+#!/bin/sh
+
+# Roughly following instructions from:
 # http://www.dan.me.uk/blog/2012/05/06/full-disk-encryption-with-zfs-root-for-freebsd-9-x/
 
 
@@ -17,6 +20,17 @@
 ####################################
 
 
+if [ $# -ne 1 ]
+    echo "Usage: $0 <hdd lable>"
+    echo " eg: $0 ada0"
+    exit 1
+fi
+
+die(){
+    echo $1
+    exit 1
+}
+
 # The Hard Drive to install to
 #HDD=ada0
 HDD=$1
@@ -30,19 +44,33 @@ echo "Destrotying old disk"
 gpart destroy -F $HDD
 
 echo "Creating new gpt partition scheme"
-gpart create -s gpt $HDD
+if ! gpart create -s gpt $HDD
+    then
+    die "Could not create gpt partition"
+fi
 
 echo "Adding base partitions"
-gpart create -s gpt $HDD
-gpart add -s 128 -t freebsd-boot $HDD
-gaprt add -s 3G -t freebsd-zfs $HDD
+if ! gpart add -s 128 -t freebsd-boot $HDD
+    then
+    die "could not create boot fs"
+fi
+if ! gaprt add -s 3G -t freebsd-zfs $HDD
+    then
+    die "could not create boot partition"
+fi
 
 # create the root partition and disk2 partition
-gpart add -t freebsd-zfs $HDD
+if ! gpart add -t freebsd-zfs $HDD
+    then
+    die "could not create main root partition"
+fi
 
 echo "Installing the bootloader"
 # write the bootloader
-gpart bootcode -b /boot/pmbr -p /boot/gptzfsboot -i 1 $HDD
+if ! gpart bootcode -b /boot/pmbr -p /boot/gptzfsboot -i 1 $HDD
+    then
+    die "Failed to install bootloader"
+fi
 
 echo "Setting up temporary ram disk"
 # Setup temp ramdisk
@@ -53,18 +81,42 @@ mount /dev/md2 /boot/zfs
 echo "Loading kernel modules"
 # Setup temp ramdisk
 # load the kernel modules
-kldload opensolaris
-kldload zfs
-kldload geom_eli
+if ! kldload opensolaris
+    then
+    die "Could not load opensolaris module"
+fi
+if ! kldload zfs
+    then
+    die "Could not load zfs module"
+fi
+if ! kldload geom_eli
+    then
+    die "Could not load geom_eli module"
+fi
 
 echo "Creating bootdir zpool on /dev/$HDDP2"
 # Setup temp ramdisk
 # Create initial boot dir
-zpool create bootdir /dev/$HDDP2
-zpool set bootfs=bootdir bootdir
-mkdir /boot/zfs/bootdir
-zfs set mountpoint=/boot/zfs/bootdir bootdir
-zfs mount bootdir
+if ! zpool create bootdir /dev/$HDDP2
+    then
+    die "Could not create boot dir from /dev/$HDDP2"
+fi
+if ! zpool set bootfs=bootdir bootdir
+    then
+    die "Could not set bootfs param on bootdir"
+fi
+if ! mkdir -p /boot/zfs/bootdir
+    then
+    die "Could not create /boot/zfs/bootdir "
+fi
+if ! zfs set mountpoint=/boot/zfs/bootdir bootdir
+    then
+    die "Could not set mountpoint for bootdir"
+fi
+if ! zfs mount bootdir
+    then
+    die "Could not create mount bootdir pool"
+fi
 
 echo "Generating encryption key"
 # generate encryption key
@@ -72,19 +124,36 @@ dd if=/dev/random of=/boot/zfs/bootdir/encryption.key bs=4096 count=1
 
 echo "Encrypting the partition"
 # encrypt geli partition 
-init -b -B /boot/zfs/bootdir/$HDDP3ELI -e AES-XTS -K /boot/zfs/bootdir/encryption.key -l 256 -s 4096 /dev/$HDDP3
+if ! init -b -B /boot/zfs/bootdir/$HDDP3ELI -e AES-XTS -K /boot/zfs/bootdir/encryption.key -l 256 -s 4096 /dev/$HDDP3
+    then
+    die "Failed to encrypt $HDDP3"
+fi
 echo "Attaching the encrypted partition"
-geli attach -k /boot/zfs/bootdir/encryption.key /dev/$HDDP3
+if ! geli attach -k /boot/zfs/bootdir/encryption.key /dev/$HDDP3
+    then
+    die "Could not attach encrypted partition $HDDP3"
+fi
+
+sleep 4
 
 echo "Creating zroot pool and remounting bootdir inside zroot"
 # Create the zroot pool, and remount the boot dir to inside zroot
-zpool create zroot /dev/$HDDP3ELI
-zfs set mountpoint=/boot/zfs/zroot zroot
+if ! zpool create zroot /dev/$HDDP3ELI
+    then
+    die "Could not create zroot pool"
+fi
+if ! zfs set mountpoint=/boot/zfs/zroot zroot
+    then
+    die "Could not set zroot mount point"
+fi
 zfs mount zroot
 zfs unmount bootdir
-mkdir /boot/zfs/zroot/bootdir
+mkdir -p /boot/zfs/zroot/bootdir
 zfs set mountpoint=/boot/zfs/zroot/bootdir bootdir
-zfs mount bootdir
+if ! zfs mount bootdir
+    then
+    die "Could not remount bootdir inside zroot"
+fi
 
 echo "Creating optimized zfs filesystem"
 # Create the sub pools optimized for each data type
@@ -126,11 +195,20 @@ ftp_src=$ftp"/src.txz"
 
 echo "Detected arch: $arch"
 echo "Installing freebsd: Will download the latest images from $ftp"
-mkdir /boot/zfs/zroot/downloads
+mkdir -p /boot/zfs/zroot/downloads
 cd /boot/zfs/zroot/downloads
-fetch $ftp_kernel
-fetch $ftp_base
-fetch $ftp_src
+if ! fetch $ftp_kernel
+    then
+    die "Could not retrieve kernel code"
+fi
+if ! fetch $ftp_base
+    then
+    die "Could not retrieve freebsd base"
+fi
+if ! fetch $ftp_src
+    then
+    die "Could not retrieve freebsd src"
+fi
 
 # Phew, that was a figersore, Now install freebsd
 cd /boot/zfs/zroot
