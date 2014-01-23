@@ -1,12 +1,5 @@
 #!/bin/sh
 
-HDD=ada0
-HDDP0="$ada0"p0
-HDDP1="$ada0"p1
-HDDP2="$ada0"p2
-HDDP3="$ada0"p3
-HDDP3ELI="$ada0"p3.eli
-
 if [ $# -ne 1 ]
     then
     echo "Usage: $0 <hdd lable>"
@@ -19,6 +12,13 @@ die(){
     exit 1
 }
 
+HDD=$1
+HDDP0="$HDD"p0
+HDDP1="$HDD"p1
+HDDP2="$HDD"p2
+HDDP3="$HDD"p3
+HDDP3ELI="$HDD"p3.eli
+
 # Now that the base system and kernel are installed, we can move our /boot
 # folder to it's final place on the ZFS unencrypted partition and do a little
 # housekeeping:
@@ -27,7 +27,7 @@ echo "Cleaning up boot directories"
 echo "***********************************"
 cd /
 mv /boot /bootdir/
-ln -fs /bootdir/boot /boot
+ln -fs bootdir/boot
 mv /bootdir/encryption.key /bootdir/boot/
 mv /bootdir/*.eli /bootdir/boot/
 
@@ -68,10 +68,7 @@ tzsetup
 
 #And setup a dummy /etc/mail/aliases file to prevent sendmail warnings:
 
-echo "Edit /etc/mail/aliases: "
-echo "***********************************"
 cd /etc/mail
-vi aliases
 make aliases
 
 #Now you can configure any additional settings you require (such as adding new

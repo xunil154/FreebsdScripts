@@ -294,7 +294,7 @@ chroot /boot/zfs/zroot /bin/sh /root/zfs_chroot.sh $HDD
 #wont mount our ZFS disks on boot):
 
 cd /boot/zfs
-if ! cp /boot/zfs/zpool.cache /boot/zfs/zroot/boot/zfs/zpool.cache
+if ! cp /boot/zfs/zpool.cache /boot/zfs/zroot/bootdir/boot/zfs/zpool.cache
     then
     die "Failed to copy zfs cache!"
 fi
