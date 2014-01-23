@@ -26,10 +26,10 @@ die(){
 echo "Cleaning up boot directories"
 echo "***********************************"
 cd /
-mv boot bootdir/
-ln -fs bootdir/boot
-mv bootdir/encryption.key bootdir/boot/
-mv bootdir/*.eli bootdir/boot/
+mv /boot /bootdir/
+ln -fs /bootdir/boot /boot
+mv /bootdir/encryption.key /bootdir/boot/
+mv /bootdir/*.eli /bootdir/boot/
 
 # We need to setup an initial /etc/rc.conf which will mount all ZFS filesystems on boot:
 echo "Setting up rc.conf"

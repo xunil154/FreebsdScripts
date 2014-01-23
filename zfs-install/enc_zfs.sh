@@ -220,48 +220,65 @@ ftp_kernel=$ftp"/kernel.txz"
 ftp_base=$ftp"/base.txz"
 ftp_src=$ftp"/src.txz"
 
-echo "Detected arch: $arch"
-echo "Installing freebsd: Will download the latest images from $ftp"
-echo "----------------------------------------------------"
-mkdir -p /boot/zfs/zroot/downloads
-cd /boot/zfs/zroot/downloads
-if ! fetch $ftp_kernel
+kernel=/usr/freebsd-dist/kernel.txz
+base=/usr/freebsd-dist/base.txz
+src=/usr/freebsd-dist/src.txz
+downloaded=false
+
+if [ ! -e $kernel ]
     then
-    die "Could not retrieve kernel code"
+    echo "$kernel does not exist, downloading latest instead"
+    echo "Detected arch: $arch"
+    echo "Installing freebsd: Will download the latest images from $ftp"
+    echo "----------------------------------------------------"
+    mkdir -p /boot/zfs/zroot/downloads
+    cd /boot/zfs/zroot/downloads
+    if ! fetch $ftp_kernel
+        then
+        die "Could not retrieve kernel code"
+    fi
+    if ! fetch $ftp_base
+        then
+        die "Could not retrieve freebsd base"
+    fi
+    if ! fetch $ftp_src
+        then
+        die "Could not retrieve freebsd src"
+    fi
+    kernel=/boot/zfs/zroot/downloads/kernel.txz
+    base=/boot/zfs/zroot/downloads/base.txz
+    src=/boot/zfs/zroot/downloads/src.txz
+    downloade=true
 fi
-if ! fetch $ftp_base
-    then
-    die "Could not retrieve freebsd base"
-fi
-if ! fetch $ftp_src
-    then
-    die "Could not retrieve freebsd src"
-fi
+
 
 # Phew, that was a figersore, Now install freebsd
 cd /boot/zfs/zroot
 echo "Installing base"
 echo "----------------------------------------------------"
-if ! unxz -c /boot/zfs/zroot/downloads/base.txz | tar xpf -
+if ! unxz -c $base | tar xpf -
     then
     die "Failed to install base"
 fi
 echo "Installing kernel"
 echo "----------------------------------------------------"
-if ! unxz -c /boot/zfs/zroot/downloads/kernel.txz | tar xpf -
+if ! unxz -c $kernel | tar xpf -
     then
-    die "Failed to install base"
+    die "Failed to install kernel"
 fi
 echo "Installing src"
 echo "----------------------------------------------------"
-if ! unxz -c /boot/zfs/zroot/downloads/src.txz | tar xpf -
+if ! unxz -c $src | tar xpf -
     then
     echo "Failed to install src, but continuing anyway"
 fi
 
-echo "Cleanup"
-echo "----------------------------------------------------"
-rm -rf /boot/zfs/zroot/downloads
+if $downloaded
+    then
+    echo "Cleanup downloads"
+    echo "----------------------------------------------------"
+    rm -rf /boot/zfs/zroot/downloads
+fi
 
 # now set /var/empty to read only
 zfs set readonly=on zroot/var/empty
@@ -285,6 +302,7 @@ cp /boot/zfs/zpool.cache /boot/zfs/zroot/boot/zfs/zpool.cache
 echo "Unmounting and updating zfs mount points"
 echo "----------------------------------------------------"
 
+cd /
 zfs unmount -a
 zfs set mountpoint=legacy zroot
 zfs set mountpoint=/tmp zroot/tmp
@@ -293,3 +311,4 @@ zfs set mountpoint=/var zroot/var
 zfs set mountpoint=/bootdir bootdir
 
 echo "Instillation complete. Reboot the system to boot into your new install"
+
