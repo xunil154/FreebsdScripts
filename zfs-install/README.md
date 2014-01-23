@@ -11,21 +11,28 @@ ada0p3: Remaining space <- Will be encrypted
 
 
 Setup instructions
+----------
+
 1) Insert the FreeBSD 10-RELEASE disk
+
 2) Boot into the 'Live OS'
+
 3) Connect to the network
+
 ```
 # dhclient em0
 # mkdir -p /tmp/bsdinstall_tmp
 # echo 'nameserver 8.8.8.8' > /tmp/bsdinstall_tmp/resolv.conf
 ```
 
-4) Download this script
+4) Download the scripts
+
 ```
 $ cd && fetch https://raw.github.com/xunil154/FreebsdScripts/master/zfs-install/enc_zfs.sh
 ```
 
-5) Run this script
+5) Run the enc_zfs.sh script
+
 ```
-$ chmod +x enc_zfs.sh && ./enc_zfs.sh ada0
+$ /bin/sh /enc_zfs.sh ada0
 ```
