@@ -21,6 +21,7 @@
 
 
 if [ $# -ne 1 ]
+    then
     echo "Usage: $0 <hdd lable>"
     echo " eg: $0 ada0"
     exit 1
