@@ -104,9 +104,21 @@ if ! mkdir -p /boot/zfs/bootdir
     then
     die "Could not create /boot/zfs/bootdir "
 fi
-if ! zpool create -o bootfs=bootdir -o mountpoint=/boot/zfs/bootdir bootdir /dev/$HDDP2 
+
+# Should error that it cannot mount to /bootdir
+zpool create bootdir /dev/$HDDP2
+
+if ! zpool set bootfs=bootdir bootdir
     then
-    die "Could not create boot dir from /dev/$HDDP2"
+    die "Could not set bootfs param on bootdir"
+fi
+if ! zfs set mountpoint=/boot/zfs/bootdir bootdir
+    then
+    die "Could not set mountpoint for bootdir"
+fi
+if ! zfs mount bootdir
+    then
+    die "Could not create mount bootdir pool"
 fi
 
 echo "Generating encryption key"
