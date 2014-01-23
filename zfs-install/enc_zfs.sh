@@ -18,8 +18,8 @@
 
 
 # The Hard Drive to install to
-#HDD=$0
-HDD=ada0
+#HDD=ada0
+HDD=$1
 HDDP0="$HDD"p0
 HDDP1="$HDD"p1
 HDDP2="$HDD"p2
