@@ -25,10 +25,10 @@ Setup instructions
 # echo 'nameserver 8.8.8.8' > /tmp/bsdinstall_tmp/resolv.conf
 ```
 
-4) Download the scripts
+4) Download the scripts to /tmp
 
 ```
-$ cd && fetch https://raw.github.com/xunil154/FreebsdScripts/master/zfs-install/enc_zfs.sh
+$ cd /tmp && fetch https://raw.github.com/xunil154/FreebsdScripts/master/zfs-install/enc_zfs.sh
 ```
 
 5) Run the enc_zfs.sh script
