@@ -55,7 +55,7 @@ if ! gpart add -s 128 -t freebsd-boot $HDD
     then
     die "could not create boot fs"
 fi
-if ! gaprt add -s 3G -t freebsd-zfs $HDD
+if ! gpart add -s 3G -t freebsd-zfs $HDD
     then
     die "could not create boot partition"
 fi
