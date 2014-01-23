@@ -259,15 +259,20 @@ if ! unxz -c /boot/zfs/zroot/downloads/src.txz | tar xpf -
     echo "Failed to install src, but continuing anyway"
 fi
 
+echo "Cleanup"
+echo "----------------------------------------------------"
+rm -rf /boot/zfs/zroot/downloads
+
 # now set /var/empty to read only
 zfs set readonly=on zroot/var/empty
 
 cd /tmp
 fetch --no-verify-peer https://raw.github.com/xunil154/FreebsdScripts/master/zfs-install/zfs_chroot.sh
+mkdir -p /boot/zfs/zroot/root/
 mv zfs_chroot.sh /boot/zfs/zroot/root/
 
 # Now it's time to chroot into the new system!
-chroot /boot/zfs/zroot /bin/sh /tmp/zfs_chroot.sh
+chroot /boot/zfs/zroot /bin/sh /root/zfs_chroot.sh
 
 #Now, we need to make sure the bootloader can read our ZFS pool cache (or it
 #wont mount our ZFS disks on boot):
