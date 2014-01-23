@@ -141,10 +141,10 @@ sleep 4
 
 echo "Creating zroot pool and remounting bootdir inside zroot"
 # Create the zroot pool, and remount the boot dir to inside zroot
-if ! zpool create zroot /dev/$HDDP3ELI
-    then
-    die "Could not create zroot pool"
-fi
+
+# expect this to error, /zroot does not exist so it cannot be mounted
+zpool create zroot /dev/$HDDP3ELI
+
 if ! zfs set mountpoint=/boot/zfs/zroot zroot
     then
     die "Could not set zroot mount point"
