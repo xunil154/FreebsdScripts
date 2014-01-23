@@ -20,7 +20,7 @@ die(){
 }
 
 # Now that the base system and kernel are installed, we can move our /boot
-# folder to it’s final place on the ZFS unencrypted mirror and do a little
+# folder to it's final place on the ZFS unencrypted partition and do a little
 # housekeeping:
 
 echo "Cleaning up boot directories"
