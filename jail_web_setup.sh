@@ -18,7 +18,7 @@ done
 
 for port in $ports
 do
-        cd $port_dir$port && make clean dist-clean
+        cd $port_dir$port && make clean distclean
 done
 
 echo '' >> /etc/rc.conf
