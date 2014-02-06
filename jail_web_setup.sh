@@ -1,7 +1,7 @@
 #!/bin/sh
 
 port_dir="/usr/ports/"
-ports="www/nginx www/spawn-fcgi db/mysql56-client db/php55-mysql lang/php55"
+ports="www/nginx www/spawn-fcgi db/mysql56-client db/php55-mysql lang/php55 lang/php55-extensions"
 
 cd $port_dir/ports-mgmt/dialog4ports && make install clean distclean
 
